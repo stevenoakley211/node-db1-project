@@ -1,4 +1,4 @@
-const express = require('express')
+const express = require('express');
 const router =  express.Router();
 const db = require("../data/dbConfig.js");
 
@@ -29,11 +29,64 @@ router.get('/:id',(req, res)=>{
     })
 })
 router.post('/',(req, res)=>{
+    db('accounts')
+    .insert(req.body, "id")
+    .then(id => {
+        
+          res.status(201).json({id : id, newAccount:req.body});
+        })
     
+    .catch(() => {
+      res.status(500).json({ message: 'Could not add the account' });
+    })
 })
-router.put('/',(req, res)=>{
-    
+
+router.put('/:id',(req, res)=>{
+    db('accounts')
+    .where(
+            { id:req.params.id }
+        )
+        .update(req.body)
+        .then(success => {
+            if(success){
+                res.status(200).json(
+                        { message:"account was updated" }
+                    )
+            }
+            else {
+                    res.status(404).json(
+                        { message:"could not find the account ID" }
+                    )
+                }
+        })
+        .catch(()=>{
+            res.status(500).json(
+                    { error:"server error" }
+                )
+        })
 })
-router.delete('/',(req, res)=>{
-    
+router.delete('/:id',(req, res)=>{
+    db('accounts')
+    .where(
+            { id:req.params.id }
+        )
+    .del()
+    .then(success=>{
+        if(success){
+            res.status(200).json(
+                    { message:"account was deleted" }
+                )
+        }
+        else {
+                res.status(404).json(
+                    { message:"could not find the account ID" }
+                )
+            }
+    })
+    .catch(()=>{
+        res.status(500).json(
+                { error:"server error" }
+            )
+    })
 })
+module.exports = router
